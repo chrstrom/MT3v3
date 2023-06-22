@@ -18,7 +18,6 @@ class MOTT(nn.Module):
         super().__init__()
         self.params = params
         self.d_detections = params.arch.d_detections
-        #self.temporal_encoder = LearnedPositionEncoder(params.data_generation.n_timesteps, params.arch.d_model)
         self.temporal_encoder = Time2Vec(params)
 
         # Normalization factor to make all measurement dimensions have similar standard deviations

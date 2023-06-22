@@ -49,6 +49,3 @@ class ContrastiveClassifier(nn.Module):
     def to(self, device):
         super().to(device)
         self.device = device
-
-
-# TODO: Document arguments to forward

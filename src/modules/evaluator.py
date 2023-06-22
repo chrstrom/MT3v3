@@ -5,8 +5,6 @@ from scipy.optimize import linear_sum_assignment
 import torch
 from torch.distributions.normal import Normal
 from torch.distributions.multivariate_normal import MultivariateNormal
-#from sklearn.manifold import TSNE
-#from sklearn.decomposition import PCA
 from modules.loss import MotLoss
 
 from util.misc import NestedTensor
@@ -212,30 +210,6 @@ def create_true_measurement_baseline(batch, unique_ids, params):
     return out
 
 
-def generate_tsne(embeddings, object_ids, ax):
-    from sklearn.manifold import TSNE
-    e = embeddings.detach().numpy()
-    transformed_embeddings = TSNE(n_components=2,perplexity=50,n_iter=5000).fit_transform(e[object_ids!=-2])
-    x = transformed_embeddings[:,0]
-    y = transformed_embeddings[:,1]
-    s = ax.scatter(x,y, c=(object_ids[object_ids!=-2]), cmap='tab20')
-    l = ax.legend(*s.legend_elements(), title="IDs")
-    ax.add_artist(l)
-
-
-def generate_pca(embeddings, object_ids, ax):
-    from sklearn.decomposition import PCA
-    e = embeddings.detach().numpy()
-    transformed_embeddings = PCA(n_components=2).fit_transform(e[object_ids!=-2])
-    x = transformed_embeddings[:,0]
-    y = transformed_embeddings[:,1]
-    s = ax.scatter(x,y,c=(object_ids[object_ids!=-2]), cmap='tab20')
-    l = ax.legend(*s.legend_elements(), title="IDs")
-    ax.add_artist(l)
-
-
-def generate_scene(embeddings, object_ids, ax):
-    pass
 
 
 def visualize_attn_maps(batch, outputs, attn_maps, ax, object_to_visualize=0, layer_to_visualize=-1):
@@ -280,76 +254,6 @@ def visualize_attn_maps(batch, outputs, attn_maps, ax, object_to_visualize=0, la
     colors[:, 3] = attn_weights/np.linalg.norm(attn_weights)
     ax.scatter(measurements[:,0], measurements[:,1], marker='x', color=colors, s=64)
     ax.legend()
-
-
-# DEPRECATED
-def evaluate_metrics(data_generator, model, params, mot_loss, num_eval=1000, verbose=False, data=None):
-    raise NotImplementedError('This has not been maintained, and will soon be deleted. Stop using this method.')
-    orig_gospa = {'random': {'total': [], 'localization': [], 'localization_normalized': [], 'missed': [], 'false': []},
-                  'output': {'total': [], 'localization': [], 'localization_normalized': [], 'missed': [], 'false': []}}
-    nees = {'random': None, 'output': None}
-
-    # If predicting only position, add true measurement baseline
-    if params.data_generation.prediction_target == 'position':
-        orig_gospa['true_meas'] = {'total': [], 'localization': [], 'localization_normalized': [], 'missed': [], 'false': []}
-
-    all_nees_samples = []
-    for i in range(num_eval):
-        t = time.time()
-        if (i % (1+(num_eval // 10))) == 0:
-            print(f"Starting to evaluate example {i+1}/{num_eval}....")
-        if data_generator is None:
-            batch, labels, unique_ids = data
-        else:
-            batch, labels, unique_ids, trajectories = data_generator.get_batch()
-        prediction, _, _, _, _ = model.forward(batch)
-
-        # Put prediction in the correct format for GOSPA loss computation
-        if params.data_generation.prediction_target == 'position':
-            state = prediction.positions
-        elif params.data_generation.prediction_target == 'position_and_velocity':
-            state = torch.cat((prediction.positions, prediction.velocities), dim=2)
-        else:
-            raise NotImplementedError(f'GOSPA computation for prediction target '
-                                      f'{params.data_generation.prediction_target} was not implemented yet.')
-        if params.training.batch_size != 1:
-            raise NotImplementedError('The code that follows only works for batch size = 1')
-        prediction_in_format_for_loss = {'state': state,
-                                         'logits': prediction.logits,
-                                         'state_covariances': prediction.uncertainties**2}
-
-        random_out = create_random_baseline(params)
-
-        outs = [prediction_in_format_for_loss, random_out]
-        models_to_test = ['output', 'random']
-
-        nees_total = {name: 0 for name in models_to_test}
-        n_objects_total = {name: 0 for name in models_to_test}
-        for i_model, key in enumerate(models_to_test):
-            og, indices, decomposition = compute_gospa(outs[i_model], labels, mot_loss, existence_threshold=params.loss.existence_prob_cutoff)
-            if key == 'output':
-                with torch.no_grad():
-                    nees_samples = compute_nees(outs[i_model], labels, params)
-                all_nees_samples.extend(nees_samples)
-
-            orig_gospa[key]['total'].append(og.item())
-            orig_gospa[key]['localization'].append(decomposition['localization'])
-            if decomposition['n_matched_objs'] != 0:
-                orig_gospa[key]['localization_normalized'].append(decomposition['localization']/decomposition['n_matched_objs'])
-            else:
-                orig_gospa[key]['localization_normalized'].append(decomposition['localization'])
-            orig_gospa[key]['missed'].append(decomposition['missed'])
-            orig_gospa[key]['false'].append(decomposition['false'])
-
-            if verbose:
-                print(f"'{key}' - Original GOSPA : {round(og.item(),4)}")
-                
-        if verbose:
-            print(f"Evaluation took: {round(time.time() - t)} seconds...")
-            print(".....................................................")
-
-    nees['output'] = np.array(all_nees_samples).mean()
-    return orig_gospa, nees
 
 
 def evaluate_gospa(data_generator, model, eval_params):

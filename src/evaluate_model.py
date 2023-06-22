@@ -18,7 +18,6 @@ from modules.models.mt3v3.mt3v3 import MOTT as MT3V3
 
 DT = 0.1
 
-
 def calculate_gospa(targets, tracks, c, p, alpha=2, assignment_cost_function=None):
     """GOSPA metric for multitarget tracking filters.
 

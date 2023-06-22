@@ -1,28 +1,12 @@
 import os
-import time
-import datetime
-import re
-import shutil
-import pickle
-from collections import deque
 import argparse
 
 import numpy as np
 import torch
-from torch.optim import Adam, AdamW
+from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 
-from data_generation.data_generator import DataGenerator
-from util.misc import save_checkpoint, update_logs
 from util.load_config_files import load_yaml_into_dotdict
-from util.plotting import output_truth_plot, compute_avg_certainty, get_constrastive_ax, get_false_ax, \
-    get_total_loss_ax, get_state_uncertainties_ax
-from util.logger import Logger
-from modules.loss import MotLoss, FalseMeasurementLoss, DhnLoss
-from modules.contrastive_loss import ContrastiveLoss
-from modules import evaluator
 
 from modules.models.mt3v3.mt3v3 import MOTT
 
@@ -74,23 +58,6 @@ def parse_input_args():
     )
 
     return args, params, eval_params
-
-def load_mott_model(args, params, eval_params):
-    model = MOTT(params)
-
-    model.to(torch.device(params.training.device))
-    
-    optimizer = AdamW(model.parameters(), lr=params.training.learning_rate, weight_decay=1e-4)
-    scheduler = ReduceLROnPlateau(optimizer,
-                                  patience=params.training.reduce_lr_patience,
-                                  factor=params.training.reduce_lr_factor,
-                                  verbose=params.debug.print_reduce_lr_messages)
-
-        
-        
-    return model, optimizer, scheduler
-
-
 
 
 if __name__ == '__main__':

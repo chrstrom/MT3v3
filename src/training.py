@@ -72,29 +72,10 @@ def parse_input_args():
     print(
         f"Training device: {params.training.device}, Eval device: {eval_params.training.device}, Model: {params.arch.type}"
     )
-
-
-    # if params.arch.type == 'mt3v3':
-    #     from modules.models.mt3v3.mt3v3 import MOTT
-    # # elif params.arch.type == 'detr':
-    # #     from modules.models.detr.detr import MOTT
-    # # elif params.arch.type == 'ddetr':
-    # #     from modules.models.ddetr.ddetr import MOTT
-    # # elif params.arch.type == 'encoder_only':
-    # #     from modules.models.encoder_only.encoder_only import MOTT
-
-    # # elif params.arch.type == 'dobby':
-    # #     from modules.models.endela.dobby import MOTT
-    # # elif params.arch.type == 'kreacher':
-    # #     from modules.models.endela.kreacher import MOTT
-    # else:
-    #     raise ValueError(f"Params must include 'arch.type' and should be either 'detr', 'ddetr' or 'encoder_only'. Currently using {params.arch.type}")
-
     return args, params, eval_params
 
 
 def copy_code_dependencies(logger, args):
-    # logger.save_code_dependencies(project_root_path=os.path.realpath(f"..{os.path.sep}"))
 
     # Manually copy the configuration yaml file used for this experiment to the logger folder
     code_used_folder = logger.log_path + f"{os.path.sep}code_used"
@@ -119,13 +100,11 @@ def copy_code_dependencies(logger, args):
 
     src_folder = "." + os.path.sep + "src"
     for root, dirs, files in os.walk(src_folder):
-        # create directories within destination folder
-        for directory in dirs:
+        for directory in dirs: # Make directories
             dst_dir = os.path.join(code_used_folder, root, directory)
             if not os.path.exists(dst_dir):
                 os.makedirs(dst_dir)
-        # copy files to destination folder
-        for file in files:
+        for file in files: # Copy files into newly created directories
             try:
                 src_file = os.path.join(root, file)
                 dst_file = os.path.join(code_used_folder, root, file)
@@ -135,7 +114,6 @@ def copy_code_dependencies(logger, args):
 
 def load_mott_model(args, params, eval_params):
     model = MOTT(params)
-
 
     # Optionally load the model weights from a provided checkpoint
     if args.continue_training_from is not None:

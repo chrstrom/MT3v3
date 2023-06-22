@@ -1,10 +1,4 @@
-import os
 import argparse
-import sys
-
-# Add src to path
-src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src')
-sys.path.append(src_dir)
 
 import numpy as np
 import matplotlib.pyplot as plt
