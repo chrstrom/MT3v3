@@ -3,7 +3,7 @@ This repository contains code for my Master thesis and is based on the code foun
 
 The main contributions that differentiate the MT3v3 from the two previous versions are detailed in the thesis (link coming)
 
-A pretrained MT3v3 architecture can be found here.
+A pretrained MT3v3 architecture is currently being retrained to be compatible with the final cleaned up code. This will be made available here once fully trained.
 
 ## How to use
 Using the pretrained model, the MT3v3 can be loaded using code found in the `src/load_model.py` file.
