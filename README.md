@@ -6,7 +6,9 @@ The main contributions that differentiate the MT3v3 from the two previous versio
 A pretrained MT3v3 architecture is currently being retrained to be compatible with the final cleaned up code. This will be made available here once fully trained.
 
 ## How to use
-Using the pretrained model, the MT3v3 can be loaded using code found in the `src/load_model.py` file.
+Download a pretrained network from ![here](https://drive.google.com/drive/folders/12tbdgwilYVc_qnfcl_KVF3HKuez2fKFA?usp=sharing), train a network from scratch, or continue training from one of the pretrained MT3v3 networks.
+
+A trained MT3v3 network can be loaded using code found in the `src/load_model.py` file.
 
 To evaluate the GOSPA performance of the MT3v3, code found in the `src/evaluate_model.py` can be used.
 
